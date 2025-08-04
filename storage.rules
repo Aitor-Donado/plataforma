@@ -1,0 +1,30 @@
+rules_version = '2';
+
+// Reglas de seguridad para Firebase Storage
+
+// Sólo usuarios autenticados
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // allow read, write: if request.auth != null; // Solo usuarios autenticados
+      // O temporalmente para pruebas:
+      allow read, write: if true; // ¡CUIDADO! Esto da acceso público total
+    }
+  }
+}
+
+// Permiso de escritura para administradores
+// allow write: if firestore.get(
+//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
+
+// Permiso de lectura para usuarios autenticados
+// allow read: if request.auth != null;
+
+// Bloquear todo el acceso (para producción)
+// service firebase.storage {
+//   match /b/{bucket}/o {
+//     match /{allPaths=**} {
+//       allow read, write: if false;
+//     }
+//   }
+}

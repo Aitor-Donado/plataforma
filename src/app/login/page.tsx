@@ -32,10 +32,12 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export default function LoginPage() {
+export default function LoginPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectUrl = searchParams.get('redirect') || '/';
+  // Ensure redirectUrl is always a string
+  const redirectParam = searchParams.redirect;
+  const redirectUrl: string = Array.isArray(redirectParam) ? '/' : redirectParam || '/';
+
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
