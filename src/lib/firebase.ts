@@ -1,8 +1,8 @@
 // src/lib/firebase.ts
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,12 +13,16 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app;
+let auth;
+let db;
+let analytics;
 
-// Get Firebase services
-const auth = getAuth(app);
-const db = getFirestore(app);
-const analytics = getAnalytics(app);
+if (typeof window !== "undefined") {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+  analytics = getAnalytics(app);
+}
 
 export { app, auth, db, analytics };
