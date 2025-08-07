@@ -5,12 +5,13 @@ import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyDDIidpNkLPMK5qRspSfpEVJPps4fLwgw0",
+  authDomain: "aitor-donado.firebaseapp.com",
+  projectId: "aitor-donado",
+  storageBucket: "aitor-donado.firebasestorage.app",
+  messagingSenderId: "925105958084",
+  appId: "1:925105958084:web:65ffe1c3396316b9cd6d91",
+  measurementId: "G-N7Z62N527H",
 };
 
 let app;

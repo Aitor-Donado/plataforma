@@ -1,6 +1,8 @@
+// src/app/login/LoginForm.tsx
 "use client";
 
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,57 +14,40 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
-import { auth, db } from "@/lib/firebase"; // Import Firebase auth and db instances
-import { createUserWithEmailAndPassword } from "firebase/auth"; // Import Firebase Auth function
-import { doc, setDoc } from "firebase/firestore"; // Import Firestore functions
+import { LogIn } from "lucide-react";
+import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
-export default function RegisterPage() {
-  const [email, setEmail] = useState("");
+export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/";
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
-      // Create user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user = userCredential.user;
-
-      // Create user document in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        uid: user.uid,
-      });
-
-      // Redirect to login page after successful registration
-      router.push("/login");
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push(redirectUrl);
     } catch (error: any) {
-      if (error.code === "auth/email-already-in-use") {
-        alert(
-          "This email is already in use. Please log in or use a different email."
-        );
-      } else {
-        console.error("Error registering user:", error.message);
-      }
+      console.error("Error logging in:", error.message);
+      alert(error.message);
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-150px)] py-12">
       <Card className="w-full max-w-sm">
-        <form onSubmit={handleRegister}>
+        <form onSubmit={handleLogin}>
           <CardHeader>
-            <CardTitle className="text-2xl">Register</CardTitle>
+            <CardTitle className="text-2xl">Login</CardTitle>
             <CardDescription>
-              Enter your email and password to create an account.
+              Enter your email below to login to your account.
             </CardDescription>
           </CardHeader>
+
           <CardContent className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -75,6 +60,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
+
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -86,10 +72,19 @@ export default function RegisterPage() {
               />
             </div>
           </CardContent>
+
           <CardFooter>
             <Button type="submit" className="w-full">
-              Sign Up
+              <LogIn className="mr-2 h-4 w-4" />
+              Sign in
             </Button>
+          </CardFooter>
+
+          <CardFooter className="flex justify-center text-sm">
+            Don&apos;t have an account?{" "}
+            <a href="/register" className="underline ml-1">
+              Sign up
+            </a>
           </CardFooter>
         </form>
       </Card>
