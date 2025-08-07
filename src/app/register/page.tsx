@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation'; // Keep only one import
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,41 +12,44 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LogIn } from 'lucide-react'; // Keep only one import
-import { auth } from '@/lib/firebase'; // Removed db as it's not used for login itself
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import { auth, db } from '@/lib/firebase'; // Import Firebase auth and db instances
+import { createUserWithEmailAndPassword } from 'firebase/auth'; // Import Firebase Auth function
+import { doc, setDoc } from 'firebase/firestore'; // Import Firestore functions
 
-export default function LoginPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
-  const router = useRouter();
-  // Ensure redirectUrl is always a string
-  const redirectParam = searchParams.redirect;
-  const redirectUrl: string = Array.isArray(redirectParam) ? '/' : redirectParam || '/';
-
-
+export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-      router.push(redirectUrl);
+      // Create user document in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        email: user.email,
+        uid: user.uid,
+      });
+
+      // Redirect to login page after successful registration
+      router.push('/login');
     } catch (error: any) {
-      console.error('Error logging in:', error.message);
+      console.error('Error registering user:', error.message);
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-150px)] py-12">
       <Card className="w-full max-w-sm">
-        <form onSubmit={handleLogin}>
- <CardHeader>
-            <CardTitle className="text-2xl">Login</CardTitle>
+        <form onSubmit={handleRegister}>
+          <CardHeader>
+            <CardTitle className="text-2xl">Register</CardTitle>
             <CardDescription>
-              Enter your email below to login to your account.
+              Enter your email and password to create an account.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -64,7 +66,7 @@ export default function LoginPage({ searchParams }: { searchParams: { [key: stri
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
- <Input
+              <Input
                 id="password"
                 type="password"
                 required
@@ -73,15 +75,10 @@ export default function LoginPage({ searchParams }: { searchParams: { [key: stri
               />
             </div>
           </CardContent>
- <CardFooter>
+          <CardFooter>
             <Button type="submit" className="w-full">
-              <LogIn className="mr-2 h-4 w-4" />
-              Sign in
+              Sign Up
             </Button>
-          </CardFooter>
-          <CardFooter className="flex justify-center text-sm">
-            Don't have an account?{' '}
-            <a href="/register" className="underline ml-1">Sign up</a>
           </CardFooter>
         </form>
       </Card>
