@@ -1,3 +1,5 @@
+// src/app/page.tsx
+
 import { CourseList } from "@/components/courses/course-list";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -10,7 +12,8 @@ export default function Home() {
           Unlock Your Potential
         </h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground">
-          Join our community of learners and dive into courses designed to elevate your skills to the next level.
+          Join our community of learners and dive into courses designed to
+          elevate your skills to the next level.
         </p>
         <div className="mt-8">
           <Button asChild size="lg">
@@ -20,7 +23,9 @@ export default function Home() {
       </section>
 
       <section id="courses">
-        <h2 className="text-3xl font-bold tracking-tight text-center mb-12">Our Courses</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-center mb-12">
+          Our Courses
+        </h2>
         <CourseList />
       </section>
     </div>
