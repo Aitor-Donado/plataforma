@@ -1,10 +1,10 @@
-// src/app/page.tsx
+// src/app/all_courses.tsx
 
 import { CourseList } from "@/components/courses/course-list";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function Home() {
+export default function All_Courses() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <section className="text-center py-16 md:py-24">
@@ -12,8 +12,8 @@ export default function Home() {
           Descubre tu potencial
         </h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground">
-          Join our community of learners and dive into courses designed to
-          elevate your skills to the next level.
+          Únete a nuestra comunidad de estudiantes y descubre cursos diseñados
+          para elevar tus habilidades al siguiente nivel.
         </p>
         <div className="mt-8">
           <Button asChild size="lg">
@@ -24,7 +24,7 @@ export default function Home() {
 
       <section id="courses">
         <h2 className="text-3xl font-bold tracking-tight text-center mb-12">
-          Cursos
+          Nuestros Cursos
         </h2>
         <CourseList />
       </section>
