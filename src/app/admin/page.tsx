@@ -1,14 +1,13 @@
 // src/app/admin/page.tsx
 'use client';
-import { useState } from 'react';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+import { useState, useEffect } from 'react'; // Import useEffect
+import Link from 'next/link'; // Import Link
+import { Card,
   CardDescription,
   CardFooter,
-} from '@/components/ui/card';
+  CardContent,
+  CardHeader,
+  CardTitle } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -25,8 +24,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
-  SelectContent,
-  SelectItem,
+  SelectContent, // Keep SelectContent for Level select if you decide to keep it
+  SelectItem, // Keep SelectItem for Level select
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -34,6 +33,7 @@ import { db } from '@/lib/firebase';
 import { addDoc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
+/*
 // Mock data
 const subscriptions = [
   {
@@ -86,161 +86,98 @@ const users = [
     courses: 0,
   },
 ];
+*/
+import { getDocs } from 'firebase/firestore'; // Import getDocs
+
+interface Course {
+  id: string;
+  title: string;
+  nivel: string;
+  // Add other properties if you want to display them in the list
+}
 
 export default function AdminPage() {
-  const { toast } = useToast();
-  const [courseDetails, setCourseDetails] = useState({
-    title: '',
-    descriptionBreve: '',
-    descriptionCompleta: '',
-    lecciones: 0,
-    duracion: 0,
-    nivel: 'basico' as 'basico' | 'intermedio' | 'avanzado',
-  });
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { id, value } = e.target;
-    setCourseDetails((prev) => ({ ...prev, [id]: value }));
-  };
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'courses'));
+        const coursesData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Course[];
+        setCourses(coursesData);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSelectChange = (value: string) => {
-    setCourseDetails((prev) => ({
-      ...prev,
-      nivel: value as 'basico' | 'intermedio' | 'avanzado',
-    }));
-  };
-  const handleCourseUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const slug = courseDetails.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '');
+    fetchCourses();
+  }, []);
 
-      await addDoc(collection(db, 'courses'), {
-        ...courseDetails,
-        id: slug,
-        lecciones: Number(courseDetails.lecciones),
-        duracion: Number(courseDetails.duracion),
-        imagenURL: 'https://placehold.co/600x400.png',
-        dataAiHint: courseDetails.title,
-      });
-
-      toast({
-        title: 'Course Uploaded',
-        description: 'The new course has been added to the database.',
-      });
-      // Reset form
-      setCourseDetails({
-        title: '',
-        descriptionBreve: '',
-        descriptionCompleta: '',
-        lecciones: 0,
-        duracion: 0,
-        nivel: 'basico',
-      });
-    } catch (error) {
-      console.error('Error uploading course: ', error);
-      toast({
-        title: 'Error',
-        description: 'There was an error uploading the course.',
-        variant: 'destructive',
-      });
-    }
-  };
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       <div className="grid gap-8">
+        {/* Course Management Section */}
         <Card>
           <CardHeader>
-            <CardTitle>Upload New Course</CardTitle>
+            <CardTitle>Gestión de Cursos</CardTitle>
             <CardDescription>
               Fill out the details below to add a new course.
             </CardDescription>
           </CardHeader>
-          <form onSubmit={handleCourseUpload}>
+          {/* Removed form for adding/editing courses */}
+          {/* <form onSubmit={handleCourseUpload}> */}
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Course Title</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Introduction to Next.js"
-                  value={courseDetails.title}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="descriptionBreve">Short Description</Label>
-                <Input
-                  id="descriptionBreve"
-                  placeholder="A brief summary of the course"
-                  value={courseDetails.descriptionBreve}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="descriptionCompleta">Full Description</Label>
-                <Textarea
-                  id="descriptionCompleta"
-                  placeholder="A detailed description of the course content"
-                  value={courseDetails.descriptionCompleta}
-                  onChange={handleInputChange}
-                  required
-                  rows={5}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lecciones">Number of Lessons</Label>
-                <Input
-                  id="lecciones"
-                  type="number"
-                  placeholder="e.g., 10"
-                  value={courseDetails.lecciones}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="duracion">Duration (hours)</Label>
-                <Input
-                  id="duracion"
-                  type="number"
-                  placeholder="e.g., 5"
-                  value={courseDetails.duracion}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="nivel">Level</Label>
-                <Select
-                  onValueChange={handleSelectChange}
-                  defaultValue={courseDetails.nivel}
-                >
-                  <SelectTrigger id="nivel">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="basico">Básico</SelectItem>
-                    <SelectItem value="intermedio">Intermedio</SelectItem>
-                    <SelectItem value="avanzado">Avanzado</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="md:col-span-2">
+                <p>Aquí puedes ver un listado básico de los cursos existentes.</p>
+                <p>Para agregar, editar o eliminar cursos, ve a la página de gestión.</p>
+                <div className="mt-4">
+                   <Link href="/admin/gestion_cursos" passHref>
+                    <Button asChild>
+                      <a>Ir a Gestión de Cursos</a>
+                    </Button>
+                  </Link>
+                </div>
+
+                <h3 className="text-lg font-semibold mt-6 mb-2">Listado Básico de Cursos</h3>
+                {loading ? (
+                  <p>Cargando cursos...</p>
+                ) : courses.length === 0 ? (
+                  <p>No hay cursos disponibles.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Título</TableHead>
+                        <TableHead>Nivel</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {courses.map((course) => (
+                        <TableRow key={course.id}>
+                          <TableCell className="font-medium">{course.id}</TableCell>
+                          <TableCell>{course.title}</TableCell>
+                          <TableCell>{course.nivel}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </div>
             </CardContent>
-            <CardFooter>
+            {/* Removed save button */}
+            {/* <CardFooter>
               <Button type="submit" className="ml-auto">
                 <Upload className="mr-2 h-4 w-4" />
-                Upload Course
+                Guardar Curso
               </Button>
-            </CardFooter>
-          </form>
+            </CardFooter> */}
+          {/* </form> */}
         </Card>
         <Card>
           <CardHeader>
