@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { SubscriptionButton } from '@/components/courses/subscription-button';
@@ -14,34 +14,38 @@ export default function CourseDetailPage({
   params,
 }: {
   params: { id: string };
-}) {
+}
+) {
+  const resolvedParams = React.use(params); // Unwrap the params Promise
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const q = query(
-          collection(db, 'courses'),
-          where('id', '==', params.id)
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-          notFound();
-        } else {
-          const courseData = querySnapshot.docs[0].data() as Course;
-          setCourse(courseData);
-        }
-      } catch (error) {
-        console.error('Error fetching course:', error);
-        notFound();
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCourse();
-  }, [params.id]);
+        const fetchCourse = async () => {
+          try {
+            const q = query(
+              collection(db, 'courses'),
+              where('id', '==', params.id)
+            );
+            const querySnapshot = await getDocs(q);
+            console.log('Query result:', querySnapshot.empty); // <-- Agrega este log
+            if (querySnapshot.empty) {
+              console.log('Course not found, redirecting to 404'); // <-- Agrega este log
+              notFound();
+            } else {
+              const courseData = querySnapshot.docs[0].data() as Course;
+              console.log('Course data fetched:', courseData.title); // <-- Agrega este log
+              setCourse(courseData);
+            }
+          } catch (error) {
+            console.error('Error fetching course:', error); // <-- Este ya está, pero es crucial
+            notFound();
+          } finally {
+            setLoading(false);
+          }
+        };
+        fetchCourse();
+      }, [params.id]);
 
   if (loading) {
     return (
