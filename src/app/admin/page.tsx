@@ -1,12 +1,14 @@
 // src/app/admin/page.tsx
-
+'use client';
+import { useState } from 'react';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
+  CardFooter,
+} from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -14,70 +16,232 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Check, X, Upload } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { db } from '@/lib/firebase';
+import { addDoc, collection } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 // Mock data
 const subscriptions = [
   {
-    id: "sub1",
-    userName: "Alice Johnson",
-    courseName: "React Fundamentals",
-    status: "pending",
+    id: 'sub1',
+    userName: 'Alice Johnson',
+    courseName: 'React Fundamentals',
+    status: 'pending',
   },
   {
-    id: "sub2",
-    userName: "Bob Williams",
-    courseName: "Advanced TypeScript",
-    status: "pending",
+    id: 'sub2',
+    userName: 'Bob Williams',
+    courseName: 'Advanced TypeScript',
+    status: 'pending',
   },
   {
-    id: "sub3",
-    userName: "Charlie Brown",
-    courseName: "Firebase for Web",
-    status: "approved",
+    id: 'sub3',
+    userName: 'Charlie Brown',
+    courseName: 'Firebase for Web',
+    status: 'approved',
   },
 ];
 
 const users = [
   {
-    id: "user1",
-    name: "Alice Johnson",
-    email: "alice@example.com",
-    role: "user",
+    id: 'user1',
+    name: 'Alice Johnson',
+    email: 'alice@example.com',
+    role: 'user',
     courses: 1,
   },
   {
-    id: "user2",
-    name: "Bob Williams",
-    email: "bob@example.com",
-    role: "user",
+    id: 'user2',
+    name: 'Bob Williams',
+    email: 'bob@example.com',
+    role: 'user',
     courses: 1,
   },
   {
-    id: "user3",
-    name: "Charlie Brown",
-    email: "charlie@example.com",
-    role: "user",
+    id: 'user3',
+    name: 'Charlie Brown',
+    email: 'charlie@example.com',
+    role: 'user',
     courses: 2,
   },
   {
-    id: "user4",
-    name: "Admin User",
-    email: "admin@example.com",
-    role: "admin",
+    id: 'user4',
+    name: 'Admin User',
+    email: 'admin@example.com',
+    role: 'admin',
     courses: 0,
   },
 ];
 
 export default function AdminPage() {
+  const { toast } = useToast();
+  const [courseDetails, setCourseDetails] = useState({
+    title: '',
+    descriptionBreve: '',
+    descriptionCompleta: '',
+    lecciones: 0,
+    duracion: 0,
+    nivel: 'basico' as 'basico' | 'intermedio' | 'avanzado',
+  });
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { id, value } = e.target;
+    setCourseDetails((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setCourseDetails((prev) => ({
+      ...prev,
+      nivel: value as 'basico' | 'intermedio' | 'avanzado',
+    }));
+  };
+  const handleCourseUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const slug = courseDetails.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
+
+      await addDoc(collection(db, 'courses'), {
+        ...courseDetails,
+        id: slug,
+        lecciones: Number(courseDetails.lecciones),
+        duracion: Number(courseDetails.duracion),
+        imagenURL: 'https://placehold.co/600x400.png',
+        dataAiHint: courseDetails.title,
+      });
+
+      toast({
+        title: 'Course Uploaded',
+        description: 'The new course has been added to the database.',
+      });
+      // Reset form
+      setCourseDetails({
+        title: '',
+        descriptionBreve: '',
+        descriptionCompleta: '',
+        lecciones: 0,
+        duracion: 0,
+        nivel: 'basico',
+      });
+    } catch (error) {
+      console.error('Error uploading course: ', error);
+      toast({
+        title: 'Error',
+        description: 'There was an error uploading the course.',
+        variant: 'destructive',
+      });
+    }
+  };
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       <div className="grid gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Upload New Course</CardTitle>
+            <CardDescription>
+              Fill out the details below to add a new course.
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleCourseUpload}>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="title">Course Title</Label>
+                <Input
+                  id="title"
+                  placeholder="e.g., Introduction to Next.js"
+                  value={courseDetails.title}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="descriptionBreve">Short Description</Label>
+                <Input
+                  id="descriptionBreve"
+                  placeholder="A brief summary of the course"
+                  value={courseDetails.descriptionBreve}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="descriptionCompleta">Full Description</Label>
+                <Textarea
+                  id="descriptionCompleta"
+                  placeholder="A detailed description of the course content"
+                  value={courseDetails.descriptionCompleta}
+                  onChange={handleInputChange}
+                  required
+                  rows={5}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lecciones">Number of Lessons</Label>
+                <Input
+                  id="lecciones"
+                  type="number"
+                  placeholder="e.g., 10"
+                  value={courseDetails.lecciones}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="duracion">Duration (hours)</Label>
+                <Input
+                  id="duracion"
+                  type="number"
+                  placeholder="e.g., 5"
+                  value={courseDetails.duracion}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="nivel">Level</Label>
+                <Select
+                  onValueChange={handleSelectChange}
+                  defaultValue={courseDetails.nivel}
+                >
+                  <SelectTrigger id="nivel">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basico">Básico</SelectItem>
+                    <SelectItem value="intermedio">Intermedio</SelectItem>
+                    <SelectItem value="avanzado">Avanzado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="ml-auto">
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Course
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Pending Subscriptions</CardTitle>
@@ -97,7 +261,7 @@ export default function AdminPage() {
               </TableHeader>
               <TableBody>
                 {subscriptions
-                  .filter((s) => s.status === "pending")
+                  .filter((s) => s.status === 'pending')
                   .map((sub) => (
                     <TableRow key={sub.id}>
                       <TableCell>{sub.userName}</TableCell>
@@ -125,7 +289,7 @@ export default function AdminPage() {
                   ))}
               </TableBody>
             </Table>
-            {subscriptions.filter((s) => s.status === "pending").length ===
+            {subscriptions.filter((s) => s.status === 'pending').length ===
               0 && (
               <p className="text-center text-muted-foreground py-4">
                 No pending subscriptions.
@@ -158,7 +322,7 @@ export default function AdminPage() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Badge
-                        variant={user.role === "admin" ? "default" : "outline"}
+                        variant={user.role === 'admin' ? 'default' : 'outline'}
                       >
                         {user.role}
                       </Badge>
