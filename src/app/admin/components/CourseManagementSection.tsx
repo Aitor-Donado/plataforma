@@ -16,7 +16,7 @@ export const CourseManagementSection = ({ courses, loading }: CourseManagementSe
     <div className="mt-4">
       <Link href="/admin/gestion_cursos" passHref>
         <Button asChild>
-          <a>Ir a Gestión de Cursos</a>
+          Ir a Gestión de Cursos
         </Button>
       </Link>
     </div>

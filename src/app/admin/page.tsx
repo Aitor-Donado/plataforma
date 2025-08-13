@@ -1,10 +1,8 @@
 'use client';
 import { AdminCard } from './components/AdminCard';
 import { CourseManagementSection } from './components/CourseManagementSection';
-import { SubscriptionsSection } from './components/SubscriptionsSection';
-import { UserManagementSection } from './components/UserManagementSection';
 import { useAdminData } from './hooks/useAdminData';
-import React from 'react'; // Import React
+import React from 'react';
 
 export default function AdminPage() {
   const { courses, subscriptions, users, loading } = useAdminData();
@@ -20,22 +18,6 @@ export default function AdminPage() {
           description="Overview of existing courses and link to full management."
         >
           <CourseManagementSection courses={courses} loading={loading} />
-        </AdminCard>
-
-        {/* Pending Subscriptions Section */}
-        <AdminCard
-          title="Pending Subscriptions"
-          description="Review and approve new course subscription requests."
-        >
-          <SubscriptionsSection subscriptions={subscriptions} />
-        </AdminCard>
-
-        {/* User Management Section */}
-        <AdminCard
-          title="User Management"
-          description="View all registered users on the platform."
-        >
-          <UserManagementSection users={users} />
         </AdminCard>
       </div>
     </div>
