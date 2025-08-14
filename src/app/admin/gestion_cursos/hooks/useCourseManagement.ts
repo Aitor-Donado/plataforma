@@ -52,22 +52,40 @@ export const useCourseManagement = () => {
     }
   };
 
-  const updateCurrentCourse = (field: keyof Course, value: any) => {
-    setCurrentCourse(prev => {
-      if (!prev) return null;
-      const updatedCourse = { ...prev, [field]: value };
-      return updatedCourse;
-    });
-  };
+
   
-  const saveCourse = async (course: Course) => {
+  const updateCurrentCourse = (field: keyof Course, value: any) => {
+  console.log('updateCurrentCourse called - Field:', field, 'Value:', value); // Log at the start
+  setCurrentCourse((prev)=>{
+  if (!prev) {
+  console.log('updateCurrentCourse: prev state is null, cannot update.');
+  return null;
+  }
+  // Explicitly preserve the existing id
+        const updatedCourse = { ...prev, [field]: value, id: prev.id };
+  console.log('Object being set by updateCurrentCourse:', updatedCourse); // Log the object being set
+  return updatedCourse;
+  });
+    };
+
+
+
+  const saveCourse = async (editingCourseData: Course) => {
     try {
       setLoading(true);
-      if (course.id) {
-        await updateCourse(course.id, course);
+      if (editingCourseData.id) {
+ console.log('Attempting to update course with ID:', editingCourseData.id); // Log the ID being used for update
+ await updateCourse(editingCourseData.id, editingCourseData as Partial<Course>);
+        // After successful update, you might want to refresh the course list or update the currentCourse state if needed
+        // For now, let's assume the list is handled elsewhere or will be refreshed.
       } else {
-        const newId = await createCourse(course);
-        return newId; // Return the new ID after creation
+        // Add new course
+        // Exclude the 'id' property when adding, Firestore will generate one.
+        const { id, ...dataWithoutId } = editingCourseData;
+
+        const newId = await createCourse(dataWithoutId as CourseFormData); // Pass data without id and expect string ID
+        // After adding, update the currentCourse state with the data and the new Firestore-generated document ID.
+        setCurrentCourse({ ...editingCourseData, id: newId });
       }
     } catch (err) {
       setError(err as Error);

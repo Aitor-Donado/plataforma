@@ -1,5 +1,5 @@
 import { collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/lib/firebase'; // Assuming this import is correct
 import { Course } from '../types/courseTypes';
 
 export const getCourses = async (): Promise<Course[]> => {
@@ -15,7 +15,7 @@ export const getCourseById = async (id: string): Promise<Course | null> => {
   return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Course) : null;
 };
 
-export const createCourse = async (courseData: Course): Promise<string> => {
+export const createCourse = async (courseData: Omit<Course, 'id'>): Promise<string> => {
   const newDocRef = await addDoc(collection(db, 'courses'), courseData);
   return newDocRef.id;
 };

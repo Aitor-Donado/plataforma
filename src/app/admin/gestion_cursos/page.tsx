@@ -10,20 +10,16 @@ import type { Course } from './types/courseTypes';
 
 export default function GestionCursosPage() {
   const { courses, loading: loadingCourses, refresh } = useCourses();
-  const {
-    currentCourse,
-    loading: loadingCourse,
-    loadCourse,
-    saveCourse,
-    deleteCourse,
-  } = useCourseManagement();
+  // Store the entire object returned by useCourseManagement and destructure from it
+  const { currentCourse, loading: loadingCourse, loadCourse, saveCourse, deleteCourse, updateCurrentCourse } = useCourseManagement();
   const [selectedCourseId, setSelectedCourseId] = useState<string>('new');
-  const { updateCurrentCourse } = useCourseManagement(); // Destructure updateCurrentCourse here
+  const [forceUpdate, setForceUpdate] = useState(0); // Dummy state for forcing re-render
 
   // Add a console log wrapper around updateCurrentCourse
   const handleFormChange = (field: keyof Course, value: any) => {
-    console.log('Form Change received:', field, value);
     updateCurrentCourse(field, value);
+    // Force a re-render to potentially update the form inputs immediately
+    setForceUpdate(prev => prev + 1);
   };
 
 
