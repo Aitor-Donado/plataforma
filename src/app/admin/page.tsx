@@ -1,6 +1,9 @@
 'use client';
+import { Subscript } from 'lucide-react';
 import { AdminCard } from './components/AdminCard';
 import { CourseManagementSection } from './components/CourseManagementSection';
+import { UserManagementSection } from './components/UserManagementSection';
+import { SubscriptionsSection } from './components/SubscriptionsSection';
 import { useAdminData } from './hooks/useAdminData';
 import React from 'react';
 
@@ -15,9 +18,11 @@ export default function AdminPage() {
         {/* Course Management Section */}
         <AdminCard
           title="Gestión de Cursos"
-          description="Overview of existing courses and link to full management."
+          description="Gestión de los cursos, usuarios y suscripciones."
         >
           <CourseManagementSection courses={courses} loading={loading} />
+          <UserManagementSection users={users} loading={loading} />
+          <SubscriptionsSection subscriptions={subscriptions} loading={loading} />
         </AdminCard>
       </div>
     </div>

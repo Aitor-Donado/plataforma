@@ -11,17 +11,9 @@ interface CourseManagementSectionProps {
 
 export const CourseManagementSection = ({ courses, loading }: CourseManagementSectionProps) => (
   <>
-    <p>Aquí puedes ver un listado básico de los cursos existentes.</p>
-    <p>Para agregar, editar o eliminar cursos, ve a la página de gestión.</p>
-    <div className="mt-4">
-      <Link href="/admin/gestion_cursos" passHref>
-        <Button asChild>
-          Ir a Gestión de Cursos
-        </Button>
-      </Link>
-    </div>
 
     <h3 className="text-lg font-semibold mt-6 mb-2">Listado Básico de Cursos</h3>
+    <p>Aquí puedes ver un listado básico de los cursos existentes.</p>
     {loading ? (
       <p>Cargando cursos...</p>
     ) : courses.length === 0 ? (
@@ -46,5 +38,13 @@ export const CourseManagementSection = ({ courses, loading }: CourseManagementSe
         </TableBody>
       </Table>
     )}
+    <p>Para agregar, editar o eliminar cursos, ve a la página de gestión.</p>
+    <div className="mt-4">
+      <Link href="/admin/gestion_cursos" passHref>
+        <Button asChild>
+          <span>Ir a Gestión de Cursos</span>
+        </Button>
+      </Link>
+    </div>
   </>
 );
