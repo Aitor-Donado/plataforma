@@ -86,9 +86,9 @@ export const useCourseManagement = () => {
         // Exclude the 'id' property when adding, Firestore will generate one.
         const { id, ...dataWithoutId } = editingCourseData;
 
-        const newId = await createCourse(dataWithoutId as CourseFormData); // Pass data without id and expect string ID
+        const newDocRef = await createCourse(dataWithoutId as CourseFormData); // Pass data without id and expect DocumentReference
         // After adding, update the currentCourse state with the data and the new Firestore-generated document ID.
-        setCurrentCourse({ ...editingCourseData, id: newId });
+        setCurrentCourse({ ...editingCourseData, id: newDocRef.id });
       }
     } catch (err) {
       setError(err as Error);
