@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Course } from '../types/courseTypes';
-import { getCourses } from '../services/courseService';
+import { collection, getDocs, QueryDocumentSnapshot } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
 
 export const useCourses = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -10,7 +12,11 @@ export const useCourses = () => {
   const fetchCourses = useCallback(async () => {
     try {
       setLoading(true);
-      const coursesData = await getCourses();
+      const querySnapshot = await getDocs(collection(db, 'courses')); // Fetch raw snapshot
+      const coursesData = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return { ...data, id: doc.id } as Course; // Ensure doc.id is the id
+      });
       setCourses(coursesData);
     } catch (err) {
       setError(err as Error);

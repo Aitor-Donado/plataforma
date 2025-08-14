@@ -18,7 +18,14 @@ export default function GestionCursosPage() {
     deleteCourse,
   } = useCourseManagement();
   const [selectedCourseId, setSelectedCourseId] = useState<string>('new');
-  const { updateCurrentCourse } = useCourseManagement();
+  const { updateCurrentCourse } = useCourseManagement(); // Destructure updateCurrentCourse here
+
+  // Add a console log wrapper around updateCurrentCourse
+  const handleFormChange = (field: keyof Course, value: any) => {
+    console.log('Form Change received:', field, value);
+    updateCurrentCourse(field, value);
+  };
+
 
   const handleCourseSelect = async (courseId: string) => {
     setSelectedCourseId(courseId);
@@ -72,7 +79,7 @@ export default function GestionCursosPage() {
           course={currentCourse}
           onSubmit={handleSaveCourse}
           onDelete={currentCourse.id ? handleDelete : undefined} // Solo mostrar botón eliminar si es un curso existente
-          onChange={updateCurrentCourse}
+          onChange={handleFormChange} // Use the wrapped function
           isNew={!currentCourse.id}
           loading={loadingCourse}
         />

@@ -8,8 +8,10 @@ export const getCourses = async (): Promise<Course[]> => {
 };
 
 export const getCourseById = async (id: string): Promise<Course | null> => {
+  console.log('Attempting to fetch course with ID:', id);
   const docRef = doc(db, 'courses', id);
   const docSnap = await getDoc(docRef);
+  console.log('Document with ID', id, 'exists:', docSnap.exists());
   return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as Course) : null;
 };
 

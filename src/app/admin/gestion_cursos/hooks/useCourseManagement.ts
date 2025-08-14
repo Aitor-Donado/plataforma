@@ -1,9 +1,17 @@
 import { useState } from 'react';
-import { Course } from '../types/courseTypes';
+import { Course, CourseFormData } from '../types/courseTypes';
 import { getCourseById, createCourse, updateCourse, deleteCourse } from '../services/courseService';
 
 export const useCourseManagement = () => {
-  const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
+  const [currentCourse, setCurrentCourse] = useState<Course | null>({
+    title: '',
+    descriptionBreve: '',
+    descriptionCompleta: '',
+    lecciones: 0,
+    duracion: 0, // Ensure default duration is a number
+    nivel: 'basico',
+    imagenURL: '',
+  } as Course); // Initialize with default new course structure
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -14,7 +22,7 @@ export const useCourseManagement = () => {
         descriptionBreve: '',
         descriptionCompleta: '',
         lecciones: 0,
-        duracion: 0,
+        duracion: 0, // Ensure default duration is a number
         nivel: 'basico',
         imagenURL: '',
       } as Course); // Explicitly cast to Course
@@ -24,21 +32,34 @@ export const useCourseManagement = () => {
     try {
       setLoading(true);
       const course = await getCourseById(id);
+ console.log('currentCourse after fetching:', course);
       setCurrentCourse(course);
     } catch (err) {
       setError(err as Error);
+      // If fetching fails, set to a default empty course structure
+      // to allow the user to add a new course or see an empty form.
+      setCurrentCourse({
+        title: '',
+        descriptionBreve: '',
+        descriptionCompleta: '',
+        lecciones: 0,
+        duracion: 0,
+        nivel: 'basico',
+        imagenURL: '',
+      } as Course);
     } finally {
       setLoading(false);
     }
   };
 
   const updateCurrentCourse = (field: keyof Course, value: any) => {
-    setCurrentCourse(prev => prev ? {
-      ...prev,
-      [field]: value,
-    } : null);
+    setCurrentCourse(prev => {
+      if (!prev) return null;
+      const updatedCourse = { ...prev, [field]: value };
+      return updatedCourse;
+    });
   };
-
+  
   const saveCourse = async (course: Course) => {
     try {
       setLoading(true);
