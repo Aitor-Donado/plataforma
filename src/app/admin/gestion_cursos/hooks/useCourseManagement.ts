@@ -6,6 +6,7 @@ export const useCourseManagement = () => {
   const [currentCourse, setCurrentCourse] = useState<Course | null>({
     title: '',
     descriptionBreve: '',
+    id: '', // Initialize with empty string
     descriptionCompleta: '',
     lecciones: 0,
     duracion: 0, // Ensure default duration is a number
@@ -19,6 +20,7 @@ export const useCourseManagement = () => {
     if (id === 'new') {
       setCurrentCourse({
         title: '',
+        id: '', // Initialize with empty string
         descriptionBreve: '',
         descriptionCompleta: '',
         lecciones: 0,
@@ -40,6 +42,7 @@ export const useCourseManagement = () => {
       // to allow the user to add a new course or see an empty form.
       setCurrentCourse({
         title: '',
+        id: id,
         descriptionBreve: '',
         descriptionCompleta: '',
         lecciones: 0,
