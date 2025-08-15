@@ -5,9 +5,10 @@ export interface Course {
   descriptionCompleta: string;
   lecciones: number;
   duracion: number;
-  nivel: 'basico' | 'intermedio' | 'avanzado';
+  nivel: "basico" | "intermedio" | "avanzado";
   imagenURL: string;
   dataAiHint?: string;
 }
 
-export type CourseFormData = Omit<Course, 'id'>;
+// Para el formulario, no necesito el id
+export type CourseFormData = Omit<Course, "id">;

@@ -6,16 +6,18 @@ export interface Course {
 
 export interface Subscription {
   id: string;
+  userId: string;
+  courseId: string;
   userName: string;
   courseName: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
 }
 
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   courses: number;
 }
 
