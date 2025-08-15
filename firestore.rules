@@ -3,11 +3,11 @@ service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
       // Desarrollo: permisos abiertos
-      allow read, write: if isDevelopment();
+      // allow read, write: if isDevelopment();
 
       // Producción: reglas estrictas (comentar para desarrollo)
-      // allow read: if request.auth != null;
-      // allow write: if isAdmin();
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
 
       function isDevelopment() {
         return request.time < timestamp.date(2025, 12, 31);
@@ -16,6 +16,10 @@ service cloud.firestore {
       function isAdmin() {
         return request.auth.token.admin == true;
       }
+    }
+    match /users/{userId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // O ajusta según sea necesario
     }
   }
 }

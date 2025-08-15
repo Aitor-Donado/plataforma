@@ -37,6 +37,16 @@ export function Header() {
       <Link href="/blog" className="hover:text-primary">
         Blog
       </Link>
+      {user && (
+        <Link href={`/users/${user.uid}/`} className="hover:text-primary">
+          Profile
+        </Link>
+      )}
+      {user && user.role === "admin" && (
+        <Link href="/admin" className="hover:text-primary">
+          Admin
+        </Link>
+      )}
     </>
   );
 
