@@ -1,7 +1,8 @@
-"use client";
 import React, { useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { NotionAPI } from 'notion-client';
+import { NotionRenderer } from 'react-notion-x';
 import { SubscriptionButton } from "@/components/courses/subscription-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book, Clock, Users } from "lucide-react";
@@ -10,6 +11,9 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import type { Course } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Import react-notion-x styles
+import 'react-notion-x/src/styles.css';
+
 export default function CourseDetailPage({
   params,
 }: {
@@ -17,7 +21,14 @@ export default function CourseDetailPage({
 }) {
   const resolvedParams = React.use(params); // Unwrap the params Promise
   const [course, setCourse] = useState<Course | null>(null);
+  const [notionPageData, setNotionPageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Hardcoded Notion Page ID for testing
+  const notionPageId = '256f12692df480a8b352f4a11c04ba50';
+
+  // Initialize Notion API client
+  const notion = new NotionAPI();
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -34,6 +45,11 @@ export default function CourseDetailPage({
         } else {
           const courseData = querySnapshot.docs[0].data() as Course;
           console.log("Título del curso encontrado:", courseData.title); // <-- Agrega este log
+          
+          // Fetch Notion page data
+          const recordMap = await notion.getPage(notionPageId);
+          setNotionPageData(recordMap);
+
           setCourse(courseData);
         }
       } catch (error) {
@@ -41,7 +57,7 @@ export default function CourseDetailPage({
         notFound();
       } finally {
         setLoading(false);
-      }
+      } 
     };
     fetchCourse();
   }, [resolvedParams.id]);
@@ -76,7 +92,7 @@ export default function CourseDetailPage({
     return notFound();
   }
 
-  return (
+  return ( 
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="grid md:grid-cols-3 gap-8 md:gap-12">
         <div className="md:col-span-2">
@@ -91,6 +107,12 @@ export default function CourseDetailPage({
           </div>
           <div className="prose prose-lg dark:prose-invert max-w-none">
             <p>{course.contenido}</p>
+          </div>          
+          {/* Render Notion content */}
+          <div className="notion-container">
+            {notionPageData && (
+              <NotionRenderer recordMap={notionPageData} fullPage={false} darkMode={true} />
+            )}
           </div>
         </div>
         <div className="md:col-span-1">
