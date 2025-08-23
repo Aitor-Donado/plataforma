@@ -6,7 +6,6 @@ import { NotionAPI } from 'notion-client';
 import { NotionRenderer } from 'react-notion-x';
 
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
 import type { Course } from "@/lib/data";
 
 import { Skeleton } from "@/components/ui/skeleton"; // Assuming Skeleton is client-side
@@ -27,18 +26,18 @@ export default function CourseDetailPage({
   const notion = new NotionAPI(); // Initialize Notion API client on the client for now
 
   useEffect(() => {
-    const fetchCourse = async () => {
+    const fetchData = async () => {
       try {
+        // Attempt to handle params.id within useEffect (less ideal)
+        const courseId = (params as any).id;
+
         const q = query(
           collection(db, "courses"),
-          where("id", "==", params.id)
+          where("id", "==", courseId)
         );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
           notFound();
-        } else {
-          const courseData = querySnapshot.docs[0].data() as Course;
-          const recordMap = await notion.getPage(notionPageId);
           setNotionPageData(recordMap);
           setCourse(courseData);
         }
@@ -50,7 +49,7 @@ export default function CourseDetailPage({
       }
     };
 
-    fetchCourse();
+    fetchData();
   }, [params.id, notionPageId]); // Add notionPageId to dependency array
 
   if (loading) {
@@ -85,8 +84,25 @@ export default function CourseDetailPage({
     return notFound();
   }
 
-  // Pass fetched data and params.id to the client component
   return (
- <CourseDetailsClient course={course} notionPageData={notionPageData} courseId={params.id} />
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      {/* Keep the existing course details display */}
+      <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+        {course.title}
+      </h1>
+      <p className="text-lg text-muted-foreground mb-6">
+        {course.descriptionBreve}
+      </p>
+      {/* Render Notion content using NotionRenderer */}
+      {notionPageData ? (
+        <NotionRenderer recordMap={notionPageData} fullPage={false} darkMode={false} />
+      ) : (
+        <div>Error loading Notion content or no content available.</div>
+      )}
+
+      {/* You can pass course data or specific properties to CourseDetailsClient if needed for other sections */}
+      {/* For now, keeping it simple */}
+      {/* <CourseDetailsClient course={course} courseId={params.id} /> */}
+    </div>
   );
 }
