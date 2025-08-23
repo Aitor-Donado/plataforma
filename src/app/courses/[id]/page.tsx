@@ -1,51 +1,50 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import { notFound } from 'next/navigation';
-import Image from 'next/image';
-import { SubscriptionButton } from '@/components/courses/subscription-button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Book, Clock, Users } from 'lucide-react';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import type { Course } from '@/lib/data';
-import { Skeleton } from '@/components/ui/skeleton';
+"use client";
+import React, { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { SubscriptionButton } from "@/components/courses/subscription-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Book, Clock, Users } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import type { Course } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CourseDetailPage({
   params,
 }: {
-  params: { id: string };
-}
-) {
+  params: Promise<{ id: string }>;
+}) {
   const resolvedParams = React.use(params); // Unwrap the params Promise
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-        const fetchCourse = async () => {
-          try {
-            const q = query(
-              collection(db, 'courses'),
-              where('id', '==', params.id)
-            );
-            const querySnapshot = await getDocs(q);
-            console.log('Query result:', querySnapshot.empty); // <-- Agrega este log
-            if (querySnapshot.empty) {
-              console.log('Course not found, redirecting to 404'); // <-- Agrega este log
-              notFound();
-            } else {
-              const courseData = querySnapshot.docs[0].data() as Course;
-              console.log('Course data fetched:', courseData.title); // <-- Agrega este log
-              setCourse(courseData);
-            }
-          } catch (error) {
-            console.error('Error fetching course:', error); // <-- Este ya está, pero es crucial
-            notFound();
-          } finally {
-            setLoading(false);
-          }
-        };
-        fetchCourse();
-      }, [params.id]);
+    const fetchCourse = async () => {
+      try {
+        const q = query(
+          collection(db, "courses"),
+          where("id", "==", resolvedParams.id)
+        );
+        const querySnapshot = await getDocs(q);
+        console.log("Query result:", querySnapshot.empty); // <-- Agrega este log
+        if (querySnapshot.empty) {
+          console.log("Course not found, redirecting to 404"); // <-- Agrega este log
+          notFound();
+        } else {
+          const courseData = querySnapshot.docs[0].data() as Course;
+          console.log("Course data fetched:", courseData.title); // <-- Agrega este log
+          setCourse(courseData);
+        }
+      } catch (error) {
+        console.error("Error fetching course:", error); // <-- Este ya está, pero es crucial
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourse();
+  }, [resolvedParams.id]);
 
   if (loading) {
     return (
@@ -107,7 +106,9 @@ export default function CourseDetailPage({
               <div className="space-y-4 mb-6">
                 <div className="flex items-center gap-3">
                   <Book className="h-5 w-5 text-primary" />
-                  <span className="font-medium">{course.lecciones} Lessons</span>
+                  <span className="font-medium">
+                    {course.lecciones} Lessons
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-primary" />
@@ -115,7 +116,9 @@ export default function CourseDetailPage({
                 </div>
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-primary" />
-                  <span className="font-medium capitalize">{course.nivel} Level</span>
+                  <span className="font-medium capitalize">
+                    {course.nivel} Level
+                  </span>
                 </div>
               </div>
 
