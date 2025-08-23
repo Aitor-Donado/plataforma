@@ -27,17 +27,17 @@ export default function CourseDetailPage({
           where("id", "==", resolvedParams.id)
         );
         const querySnapshot = await getDocs(q);
-        console.log("Query result:", querySnapshot.empty); // <-- Agrega este log
+        console.log("¿Curso no encontrado?:", querySnapshot.empty); // <-- Agrega este log
         if (querySnapshot.empty) {
           console.log("Course not found, redirecting to 404"); // <-- Agrega este log
           notFound();
         } else {
           const courseData = querySnapshot.docs[0].data() as Course;
-          console.log("Course data fetched:", courseData.title); // <-- Agrega este log
+          console.log("Título del curso encontrado:", courseData.title); // <-- Agrega este log
           setCourse(courseData);
         }
       } catch (error) {
-        console.error("Error fetching course:", error); // <-- Este ya está, pero es crucial
+        console.error("Error fetching course:", error);
         notFound();
       } finally {
         setLoading(false);
@@ -88,6 +88,9 @@ export default function CourseDetailPage({
           </p>
           <div className="prose prose-lg dark:prose-invert max-w-none">
             <p>{course.descriptionCompleta}</p>
+          </div>
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            <p>{course.contenido}</p>
           </div>
         </div>
         <div className="md:col-span-1">
