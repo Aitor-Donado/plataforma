@@ -1,86 +1,38 @@
 'use client';
 
-import React, { useEffect, useState } from "react";
-import { notFound } from "next/navigation";
+import React from "react";
+// Remove notFound import as handling is server-side
+// import { notFound } from "next/navigation";
 import Image from "next/image";
 import { SubscriptionButton } from "@/components/courses/subscription-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Book, Clock, Users } from "lucide-react";
-import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import type { Course } from "@/lib/data";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { Course } from "@/lib/data"; // Assuming this type is correct
+import { NotionRenderer } from 'react-notion-x';
+import 'react-notion-x/src/styles.css'; // Import styles here too for client-side rendering
 
 interface CourseDetailsClientProps {
-  initialCourseId: string;
-  // You might add props for initial Notion data here later if needed
-  // initialNotionData?: any; 
+  initialCourse: Course | null; // Receive the fetched course data
+  notionData: any; // Receive Notion data
 }
 
-export const CourseDetailsClient = ({ initialCourseId }: CourseDetailsClientProps) => {
-  const [course, setCourse] = useState<Course | null>(null);
-  const [loading, setLoading] = useState(true);
+export const CourseDetailsClient = ({ initialCourse, notionData }: CourseDetailsClientProps) => {
+  // Use the data received from the server
+  const course = initialCourse;
 
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const q = query(
-          collection(db, "courses"),
-          where("id", "===", initialCourseId) // Use initialCourseId prop
-        );
-        const querySnapshot = await getDocs(q);
-        console.log("¿Curso no encontrado? (Client):", querySnapshot.empty);
-        if (querySnapshot.empty) {
-          console.log("Course not found (Client), potentially redirecting to 404");
-          // Depending on your setup, you might not call notFound() directly in a client component,
-          // but handle the not found state or redirect differently.
-          // For now, keeping it as is, but be aware.
-           notFound(); 
-        } else {
-          const courseData = querySnapshot.docs[0].data() as Course;
-          console.log("Título del curso encontrado (Client):", courseData.title);
-          setCourse(courseData);
-        }
-      } catch (error) {
-        console.error("Error fetching course (Client):", error);
-         // Handle error state or redirect differently in client component
-         notFound(); 
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCourse();
-  }, [initialCourseId]); // Depend on initialCourseId prop
+  // Remove client-side fetching state and effect
+  // const [course, setCourse] = useState<Course | null>(null);
+  // const [loading, setLoading] = useState(true);
+  // useEffect(() => { ... }, [...]);
 
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="grid md:grid-cols-3 gap-8 md:gap-12">\
-          <div className="md:col-span-2 space-y-4">
-            <Skeleton className="h-12 w-3/4" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-40 w-full" />
-          </div>
-          <div className="md:col-span-1">
-            <Card className="overflow-hidden sticky top-24">
-              <Skeleton className="aspect-[3/2] w-full" />
-              <CardContent className="p-6 space-y-4">
-                <Skeleton className="h-6 w-1/2" />
-                <Skeleton className="h-6 w-1/3" />
-                <Skeleton className="h-6 w-1/4" />
-                <Skeleton className="h-12 w-full mt-4" />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
+  // Handle case where course data was not found on the server
   if (!course) {
-    // This case should ideally be handled by the fetchCourse logic
-    return null; // Or a specific error/not found rendering
+    // notFound() is called server-side, but this is a safeguard/type safety check
+    // This component should ideally not render if course is null
+     return null;
   }
+
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -92,13 +44,12 @@ export const CourseDetailsClient = ({ initialCourseId }: CourseDetailsClientProp
           <p className="text-lg text-muted-foreground mb-6">
             {course.descriptionBreve}
           </p>
-          <div className="prose prose-lg dark:prose-invert max-w-none">
-            <p>{course.descriptionCompleta}</p>
-          </div>
-          {/* Keep the Notion placeholder here for now */}
-          <div>
-            Aquí tiene que ir el contenido del notion
-          </div>
+          {/* Render Notion content using NotionRenderer */}
+          {notionData ? (
+             <NotionRenderer recordMap={notionData} fullPage={false} darkMode={false} />
+          ) : (
+              <div>Error loading Notion content or no content available.</div>
+          )}
         </div>
         <div className="md:col-span-1">
           <Card className="overflow-hidden sticky top-24">
@@ -132,8 +83,8 @@ export const CourseDetailsClient = ({ initialCourseId }: CourseDetailsClientProp
                 </div>
               </div>
 
-              {/* SubscriptionButton uses client-side logic */}
-              <SubscriptionButton courseId={initialCourseId} /> 
+              {/* SubscriptionButton remains client-side as it likely has interaction/state */}
+              <SubscriptionButton courseId={course.id} />
             </CardContent>
           </Card>
         </div>
