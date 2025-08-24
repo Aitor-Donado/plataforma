@@ -35,7 +35,11 @@ export default async function NotionPageRoute({
 
     return (
       <main className="min-h-screen bg-gray-50 flex">
-        <NotionPage recordMap={recordMap} pageId={pageId} />
+        <NotionPage
+          recordMap={recordMap}
+          pageId={pageId}
+          basePath="/contenidos/excel-basico"
+        />
       </main>
     );
   } catch (error) {

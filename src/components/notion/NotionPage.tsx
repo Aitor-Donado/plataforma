@@ -1,23 +1,46 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { NotionRenderer } from "react-notion-x";
 import { ExtendedRecordMap } from "notion-types";
+import dynamic from "next/dynamic";
+
+const Code = dynamic(() =>
+  import("react-notion-x/build/third-party/code").then((m) => m.Code)
+);
+const Collection = dynamic(() =>
+  import("react-notion-x/build/third-party/collection").then(
+    (m) => m.Collection
+  )
+);
 import { useRouter } from "next/navigation";
+import Link from "next/link"; // Import Link from next/link
+
 import "react-notion-x/src/styles.css";
+// Dynamic imports for code syntax highlighting and math equations
+import "prismjs/themes/prism-tomorrow.css"; // Example style, choose your preferred theme
+import "katex/dist/katex.min.css";
+
 import "prismjs/themes/prism.css";
 import "katex/dist/katex.min.css";
 import NotionSidebar from "./NotionSidebar";
 import { restoreNotionId } from "@/lib/utils";
 
-interface NotionPageProps {
+interface NotionPageProps extends React.HTMLAttributes<HTMLDivElement> {
   recordMap: ExtendedRecordMap;
   pageId: string;
+  basePath: string; // Add basePath prop
 }
 
-export default function NotionPage({ recordMap, pageId }: NotionPageProps) {
+export default function NotionPage({
+  recordMap,
+  pageId,
+  basePath,
+  ...rest
+}: NotionPageProps) {
   const router = useRouter();
-  const [currentRecordMap, setCurrentRecordMap] = useState(recordMap);
+  const [currentRecordMap, setCurrentRecordMap] =
+    useState<ExtendedRecordMap>(recordMap);
   const [currentPageId, setCurrentPageId] = useState(pageId);
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -74,6 +97,7 @@ export default function NotionPage({ recordMap, pageId }: NotionPageProps) {
     return "Página sin título";
   }, [currentRecordMap, currentPageId]);
 
+  // NOTE: This function is now only used by the sidebar navigation.
   // Función para manejar la navegación a una subpágina
   const handleNavigateToPage = useCallback(
     async (newPageId: string) => {
@@ -85,59 +109,77 @@ export default function NotionPage({ recordMap, pageId }: NotionPageProps) {
 
         setCurrentRecordMap(newRecordMap);
         setCurrentPageId(newPageId);
-        router.push(`/${newPageId}`);
+        router.push(`${basePath}/${newPageId}`); // Use basePath here
       } catch (error) {
         console.error("Error al navegar a la página:", error);
       } finally {
         setIsLoading(false);
       }
     },
-    [router]
+    [router, basePath] // Simplified dependencies
   );
 
-  // Personalizamos el componente de página para manejar la navegación
-  const components = {
-    Page: (props: any) => {
-      // Si es una subpágina, creamos un enlace para navegar a ella
-      if (props.block?.type === "sub_page" || props.block?.type === "page") {
-        const pageId = props.block.id;
-        // Acceder a las propiedades correctamente
-        const blockData = props.block.value || props.block;
+  // this ensures all notion-internal links get prefixed with basePath
+  const mapPageUrl = useCallback(
+    (pageId: string) => `${basePath}/${restoreNotionId(pageId)}`,
+    [basePath]
+  );
 
-        // Obtener el título usando la misma lógica que getPageTitle
-        let title = "Página sin título";
-        if (blockData.properties && blockData.properties.title) {
-          if (
-            Array.isArray(blockData.properties.title) &&
-            blockData.properties.title.length > 0 &&
-            Array.isArray(blockData.properties.title[0]) &&
-            blockData.properties.title[0].length > 0
-          ) {
-            title = blockData.properties.title[0][0] || "Página sin título";
-          } else if (
-            Array.isArray(blockData.properties.title) &&
-            blockData.properties.title.length > 0 &&
-            typeof blockData.properties.title[0] === "string"
-          ) {
-            title = blockData.properties.title[0] || "Página sin título";
-          }
+  // Use useMemo for components to avoid re-creating on every render
+  const components = useMemo(() => {
+    return {
+      // Override generic link handling
+      // This is often not necessary if mapPageUrl is used correctly, but can catch some edge cases.
+      a: ({
+        href,
+        children,
+        ...rest
+      }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+        if (!href) return <a {...rest}>{children}</a>;
+
+        // Check if it's potentially an internal Notion link (relative path starting with /)
+        // react-notion-x should use mapPageUrl for these, but this provides a fallback
+        const isInternalNotionLink =
+          href.startsWith("/") && href.replace(/\//g, "").length >= 32; // Basic check for Notion ID format
+
+        // If mapPageUrl worked correctly, the href should already start with basePath for internal links.
+        const targetHref =
+          isInternalNotionLink && !href.startsWith(basePath)
+            ? `${basePath}${href}`
+            : href;
+
+        if (isInternalNotionLink && href.startsWith("/")) {
+          // Ensure it's an internal path needing Next.js routing
+          return (
+            <a
+              {...rest}
+              href={targetHref}
+              onClick={(e) => {
+                e.preventDefault();
+                router.push(targetHref); // Use router.push for client-side navigation
+              }}
+            >
+              {children}
+            </a>
+          );
         }
 
+        // External links
         return (
-          <div
-            className="notion-page-link"
-            onClick={() => handleNavigateToPage(pageId)}
-            style={{ cursor: "pointer" }}
+          <a
+            {...rest}
+            href={targetHref}
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            {title}
-          </div>
+            {children}
+          </a>
         );
-      }
-
-      // Para otros tipos de contenido, usamos el renderizador por defecto
-      return <NotionRenderer.Components.Page {...props} />;
-    },
-  };
+      },
+      Code,
+      Collection,
+    };
+  }, [router, basePath]); // Dependencies for useMemo
 
   if (isLoading) {
     return (
@@ -207,6 +249,7 @@ export default function NotionPage({ recordMap, pageId }: NotionPageProps) {
             recordMap={currentRecordMap}
             fullPage={false}
             darkMode={false}
+            mapPageUrl={mapPageUrl} // Pass mapPageUrl here
             components={components}
             disableHeader={true}
           />
