@@ -1,57 +1,135 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import { NotionAPI } from 'notion-client';
-import { getDocs, collection, query, where } from 'firebase/firestore';
-import { db } from '@/lib/firebase'; // Assuming db import is correct
+"use client";
+import React, { useEffect, useState } from "react";
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import { SubscriptionButton } from "@/components/courses/subscription-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Book, Clock, Users } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import type { Course } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const notion = new NotionAPI();
-
-// Hardcoded Notion Page ID for testing - replace with logic to get this from course data later
-const NOTION_PAGE_ID = '256f12692df480a8b352f4a11c04ba50';
-
-export default async function CourseDetailPage({
+export default function CourseDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  // Unwrap the params Promise in the Server Component
-  const { id: courseId } = React.use(params);
+  const resolvedParams = React.use(params); // Unwrap the params Promise
+  const [course, setCourse] = useState<Course | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch Firestore course data server-side
-  const firestoreQuery = query(
-    collection(db, "courses"),
-    where("id", "==", courseId)
-  );
-  const firestorePromise = getDocs(firestoreQuery);
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const q = query(
+          collection(db, "courses"),
+          where("id", "==", resolvedParams.id)
+        );
+        const querySnapshot = await getDocs(q);
+        console.log("¿Curso no encontrado?:", querySnapshot.empty); // <-- Agrega este log
+        if (querySnapshot.empty) {
+          console.log("Course not found, redirecting to 404"); // <-- Agrega este log
+          notFound();
+        } else {
+          const courseData = querySnapshot.docs[0].data() as Course;
+          console.log("Título del curso encontrado:", courseData.title); // <-- Agrega este log
+          setCourse(courseData);
+        }
+      } catch (error) {
+        console.error("Error fetching course:", error);
+        notFound();
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCourse();
+  }, [resolvedParams.id]);
 
-  // Fetch Notion page data by calling the API route
-  const notionApiUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/notion?pageId=${NOTION_PAGE_ID}`;
-  const notionPromise = fetch(notionApiUrl).then(res => res.json());
-
-  try {
-    // Await both promises concurrently
-    const querySnapshot = await firestorePromise;
-    const notionData = await notionPromise;
-
-    if (querySnapshot.empty) {
-      console.log(`Course with ID ${courseId} not found in Firestore.`);
-      notFound();
-    } else {
-      const course = querySnapshot.docs[0].data(); // Data is already Course type via client component
-      console.log(`Course found: ${course.title}`);
-
-    }
-  } catch (error) {
-    // Handle potential errors from either Firestore or Notion fetching
-     console.error(`Error fetching Firestore data for course ID ${courseId}:`, error);
-     notFound(); // If Firestore fetching fails, notFound() is called
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+          <div className="md:col-span-2 space-y-4">
+            <Skeleton className="h-12 w-3/4" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+          <div className="md:col-span-1">
+            <Card className="overflow-hidden sticky top-24">
+              <Skeleton className="aspect-[3/2] w-full" />
+              <CardContent className="p-6 space-y-4">
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-6 w-1/3" />
+                <Skeleton className="h-6 w-1/4" />
+                <Skeleton className="h-12 w-full mt-4" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  // If course was not found by Firestore query, notFound() is already called.
+  if (!course) {
+    // This will be handled by notFound() in useEffect, but as a fallback
+    return notFound();
+  }
 
-  // Import and render the Client Component, passing the fetched data
-  const { CourseDetailsClient } = await import('./components/CourseDetailsClient');
   return (
-    <CourseDetailsClient initialCourse={course as Course} notionData={notionData} />
+    <div className="container mx-auto px-4 py-8 md:py-12">
+      <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+        <div className="md:col-span-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">
+            {course.title}
+          </h1>
+          <p className="text-lg text-muted-foreground mb-6">
+            {course.descriptionBreve}
+          </p>
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            <p>{course.descriptionCompleta}</p>
+          </div>
+          <div className="prose prose-lg dark:prose-invert max-w-none">
+            <p>{course.contenido}</p>
+          </div>
+        </div>
+        <div className="md:col-span-1">
+          <Card className="overflow-hidden sticky top-24">
+            <div className="relative aspect-[3/2] w-full">
+              <Image
+                src={course.imagenURL}
+                alt={course.title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                data-ai-hint={course.dataAiHint}
+              />
+            </div>
+            <CardContent className="p-6">
+              <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <Book className="h-5 w-5 text-primary" />
+                  <span className="font-medium">
+                    {course.lecciones} Lessons
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <span className="font-medium">{course.duracion} Hours</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Users className="h-5 w-5 text-primary" />
+                  <span className="font-medium capitalize">
+                    {course.nivel} Level
+                  </span>
+                </div>
+              </div>
+
+              <SubscriptionButton courseId={course.id} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,0 +1,75 @@
+/* Estilos para el contenedor principal de la aplicación */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Estilos para la aplicación con navegación lateral */
+.notion-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.notion-page-content {
+  padding: 2rem;
+  max-width: var(--notion-max-width);
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Estilos para el título de la página */
+.notion-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #03276e;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1rem;
+}
+
+/* Estilos responsivos para escritorio */
+@media screen and (min-width: 768px) {
+  .notion-app {
+    flex-direction: row;
+  }
+
+  .notion-page-content {
+    padding: 2rem;
+  }
+}
+
+/* Estilos responsivos para móvil */
+@media screen and (max-width: 767px) {
+  .notion-page-content {
+    padding: 1rem;
+    padding-top: 4rem; /* Espacio para el botón de menú */
+  }
+
+  .notion-title {
+    font-size: 2rem;
+  }
+}
+
+/* Estilos para el truncamiento de texto */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Estilos para el botón de menú en móvil */
+@media screen and (max-width: 767px) {
+  .notion-app button {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 20;
+    background-color: white;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
