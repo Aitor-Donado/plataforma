@@ -47,12 +47,15 @@ export default async function NotionPageRoute({
   }
 }
 
+/* 
 // Genera los parámetros estáticos para las páginas (opcional, para SSG)
 export async function generateStaticParams() {
-  // Aquí podrías predefinir las páginas que quieres generar estáticamente
-  // Por ejemplo:
+  console.log("Generating static params...");
   return [
-    { pageId: "329633e019de477aab2135ae3d4d2aae" },
-    // Agrega aquí los IDs de otras páginas que quieras pregenerar
+    { pageId: "329633e0-19de-477a-ab21-35ae3d4d2aae" },
+    { pageId: "258f1269-2df4-8013-8ab2-c34bc161e404" },
+    { pageId: "e066cf5f-2778-443c-920e-9996db404fd2" },
+    { pageId: "95bef0fe-f8bc-48eb-9e3d-5459427f088d" },
   ];
 }
+ */
