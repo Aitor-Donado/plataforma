@@ -19,6 +19,11 @@
   width: 100%;
 }
 
+.notion-text,
+.notion-list {
+  text-align: justify;
+}
+
 /* Estilos para el título de la página */
 .notion-title {
   font-size: 2.5rem;
