@@ -1,7 +1,15 @@
 // src/app/contenidos/excel-avanzado/[pageId]/page.tsx
 import { notFound } from "next/navigation";
-// Import the client wrapper component
-import NotionRendererClient from "@/components/notion/NotionRendererClient";
+// Remove NotionRenderer from @notion-render/client import
+// import { NotionRenderer } from '@notion-render/client';
+// Remove HtmlRenderer import
+// import HtmlRenderer from "@/components/notion/HtmlRenderer";
+import OfficialNotionRenderer from "@/components/notion/OfficialNotionRenderer"; // Import the react-notion wrapper
+
+// Import react-notion styles (needed on the client where OfficialNotionRenderer is used)
+import 'react-notion/src/styles.css';
+import 'prismjs/themes/prism-tomorrow.css'; // For code highlighting if you use code blocks
+
 
 interface PageProps {
   params: {
@@ -15,89 +23,61 @@ export default async function ExcelAvanzadoNotionPage({ params }: PageProps) {
   console.log("--- Excel Avanzado Page Execution Start ---");
   console.log("PageId recibido en la ruta:", pageId);
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000");
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
   const internalApiUrl = `${baseUrl}/contenidos/excel-avanzado/api/notion-page?pageId=${pageId}`;
 
-  let notionDataForRenderer;
+  let blockMapData; // Variable to hold the fetched blockMap
 
   try {
-    console.log(
-      "Attempting to fetch Notion data from internal API:",
-      internalApiUrl
-    );
+    console.log("Attempting to fetch Notion data (blockMap) from internal API:", internalApiUrl);
 
     const response = await fetch(internalApiUrl);
 
     console.log(`Internal API Fetch completed. Status: ${response.status}`);
 
     if (!response.ok) {
-      console.error(`Internal API returned non-ok status: ${response.status}`);
-      const errorBody = await response.text();
-      console.error("Internal API Error Body:", errorBody.substring(0, 200));
-      if (response.status === 404) {
+        console.error(`Internal API returned non-ok status: ${response.status}`);
+        const errorBody = await response.text();
+        console.error("Internal API Error Body:", errorBody.substring(0, 200));
+        if (response.status === 404) {
+            return notFound();
+        }
+        throw new Error(`Failed to fetch from internal API, status: ${response.status}`);
+    }
+
+    blockMapData = await response.json(); // This should be the blockMap object
+    console.log("Successfully fetched blockMap data from internal API");
+
+    // Check if data is valid (expecting a blockMap object)
+    if (!blockMapData || typeof blockMapData !== 'object') {
+        console.error("Received empty or invalid data format (not a blockMap object) from internal API for ID:", pageId);
+        console.error("--- Ending execution due to invalid data format ---");
         return notFound();
-      }
-      throw new Error(
-        `Failed to fetch from internal API, status: ${response.status}`
-      );
-    }
+     }
 
-    notionDataForRenderer = await response.json();
-    console.log(
-      "Successfully fetched Notion data from internal API for renderer"
-    );
+    console.log(`Successfully validated data format (blockMap object) from internal API for ID: ${pageId}. Received keys: ${Object.keys(blockMapData).length}`);
 
-    // Check if data is valid (basic check based on expected structure from API route)
-    if (
-      !notionDataForRenderer ||
-      !notionDataForRenderer.page ||
-      !notionDataForRenderer.blocks
-    ) {
-      console.error(
-        "Received empty or invalid data structure from internal API for ID:",
-        pageId
-      );
-      console.error("--- Ending execution due to invalid data structure ---");
-      return notFound();
-    }
+    console.log("--- Data Fetching and BlockMap Generation Successful ---");
 
-    console.log(
-      "Successfully validated data structure from internal API for ID:",
-      pageId
-    );
-    console.log("Starting to render NotionRenderer for ID:", pageId);
+
   } catch (error: any) {
-    console.error(
-      `--- Error during Excel Avanzado Page Execution (Fetching from internal API) for ID: ${pageId} ---`
-    );
-    console.error("Error details:", error);
-    if (error instanceof Error) {
-      console.error("Error stack:", error.stack);
+     console.error(`--- Error during Excel Avanzado Page Execution (Fetching from internal API) for ID: ${pageId} ---`);
+     console.error("Error details:", error);
+     if (error instanceof Error) {
+        console.error("Error stack:", error.stack);
     }
-    console.error(
-      "--- Ending execution due to caught error during internal API fetch ---"
-    );
+    console.error("--- Ending execution due to caught error ---");
     console.error("--- End of Error Log ---");
-    return notFound(); // Or render a custom error page
+    return notFound(); // Handle error by returning 404
   }
 
-  console.log(
-    "--- Excel Avanzado Page Execution Successfully Completed Try/Catch (Internal API) ---"
-  );
-  console.log("--- Rendering Page with NotionRenderer ---");
+  // If execution reaches here, blockMapData is populated
+  console.log("--- Rendering Page with OfficialNotionRenderer (react-notion) ---");
 
   return (
     <main className="min-h-screen bg-gray-50 flex">
-      <NotionRendererClient
-        recordMap={notionDataForRenderer as any} // Cast to any for now, or create a matching type
-        fullPage={true}
-        darkMode={false}
-        // Add any other props required by NotionRenderer
-      />
+       {/* Use the OfficialNotionRenderer client component with the blockMap prop */}
+       <OfficialNotionRenderer blockMap={blockMapData} />
     </main>
   );
 }

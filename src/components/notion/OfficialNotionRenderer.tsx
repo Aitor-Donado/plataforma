@@ -1,10 +1,11 @@
 // src/components/notion/OfficialNotionRenderer.tsx
 "use client";
 
-// TODO: Adjust the import path/name based on the actual export from @notion-render/client
-import { NotionRenderer } from '@notion-render/client';
-// Import any necessary styles from @notion-render/client if they exist
-// import '@notion-render/client/dist/style.css'; // Example style import path
+// Import NotionRenderer from the react-notion library
+import { NotionRenderer } from 'react-notion';
+// Import necessary styles
+import 'react-notion/src/styles.css';
+import 'prismjs/themes/prism-tomorrow.css'; // For code highlighting
 
-
+// Export the imported NotionRenderer as the default export
 export default NotionRenderer;

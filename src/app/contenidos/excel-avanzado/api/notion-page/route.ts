@@ -26,11 +26,6 @@ export async function GET(request: Request) {
   try {
     console.log(`--- Excel Avanzado Notion API Route Triggered (Official API) ---`);
     console.log(`Attempting to fetch page and block data for ID using official Notion client: ${pageId}`);
-    
-    // Fetch the page object
-    const page: GetPageResponse = await notion.pages.retrieve({ page_id: pageId });
-    console.log(`Official Notion API fetch completed for page object for ID: ${pageId}`);    
-    console.log("Official Notion API page object type:", page.object);
 
 
     // Fetch the child blocks of the page
@@ -41,7 +36,24 @@ export async function GET(request: Request) {
     console.log(`Official Notion API fetch completed for child blocks for ID: ${pageId}. Fetched ${blocks.results.length} blocks.`);
     console.log("Official Notion API child blocks object type:", blocks.object);
 
-    return NextResponse.json(blocks.results);
+    // Transform the array of block objects into the blockMap format for react-notion
+    const blockMap = blocks.results.reduce((map: { [key: string]: any }, block: any) => {
+        // Ensure the block has an ID before adding it to the map
+        if ('id' in block) {
+            map[block.id] = {
+                value: block, // The original official API block object
+                role: 'reader', // Default role, common in notion-client's recordMap
+                // You might need to add other properties here if react-notion requires them,
+                // based on inspecting a recordMap from notion-client.
+            };
+        }
+        return map;
+    }, {});
+
+    console.log("Generated blockMap for react-notion:", blockMap); // Log the generated blockMap
+
+    return NextResponse.json(blockMap);
+
 
   } catch (error: any) {
     console.error(`--- Error during official Notion client fetch in API route for ID ${pageId} ---`);
