@@ -38,10 +38,18 @@
 @media screen and (min-width: 768px) {
   .notion-app {
     flex-direction: row;
+    height: auto; /* Override any potential fixed height like h-screen */
   }
 
   .notion-page-content {
     padding: 2rem;
+  }
+
+  /* Ensure the main content area (flex-1 overflow-y-auto) within .notion-app
+     grows to fill available horizontal space in the flex row layout. */
+  .notion-app > .flex-1.overflow-y-auto {
+    flex-basis: 0;
+    flex-grow: 1;
   }
 }
 

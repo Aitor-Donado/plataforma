@@ -6,7 +6,12 @@ body {
   font-family: var(--font-body), sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-headline), sans-serif;
 }
 
@@ -17,63 +22,63 @@ h1, h2, h3, h4, h5, h6 {
 
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
+
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
+
     --primary: 210 97% 60%; /* #77B5FE - adjusted for better contrast */
     --primary-foreground: 210 40% 98%;
- 
+
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
- 
+
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
- 
+
     --accent: 255 100% 87%; /* #D0BFFF */
     --accent-foreground: 256 60% 30%;
- 
+
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 210 97% 60%;
- 
+
     --radius: 0.5rem;
   }
- 
+
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
- 
+
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
- 
+
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
- 
+
     --primary: 210 97% 73%;
     --primary-foreground: 222.2 47.4% 11.2%;
- 
+
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
- 
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
- 
+
     --accent: 255 100% 90%;
     --accent-foreground: 256 60% 20%;
- 
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
- 
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 210 97% 73%;
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
@@ -81,4 +86,14 @@ h1, h2, h3, h4, h5, h6 {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Add styles to center the app-container */
+.app-container {
+  max-width: 1500px; /* Or a suitable width for your content */
+  margin: 0 auto; /* Center the block-level element */
+  padding: 0 20px; /* Add some padding on the sides */
+  display: flex; /* Make app-container a flex container */
+  flex-direction: column; /* Stack children vertically */
+  min-height: 100vh; /* Ensure it takes at least viewport height */
 }

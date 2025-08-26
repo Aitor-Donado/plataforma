@@ -1,36 +1,26 @@
 // src/app/contenidos/excel-basico/layout.tsx
 
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+// Remove Metadata export if it's not needed specifically for this segment
+// import type { Metadata } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Remove font imports if they are already in the root layout
+// import { Geist, Geist_Mono } from "next/font/google";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Remove local globals.css import if global styles are handled in root
+// import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Notion Page Renderer",
-  description: "Renderizado de páginas de Notion con Next.js",
-};
+// Remove font variable declarations if fonts are handled in root layout
+// const geistSans = Geist({ ... });
+// const geistMono = Geist_Mono({ ... });
 
-export default function RootLayout({
+// Remove Metadata export
+// export const metadata: Metadata = { ... };
+
+export default function ExcelBasicoLayout({
+  // Rename function to reflect segment
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div className="app-container">{children}</div>
-      </body>
-    </html>
-  );
+  return <div className="app-container">{children}</div>;
 }
